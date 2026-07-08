@@ -1,5 +1,17 @@
 # Mixtape — Submission
 
+## AI Usage
+
+i used claude code throughout this project, but tried to keep it in an explain/trace role rather than a diagnose role, since that's what actually held up.
+
+for the codebase map, i had it read through app.py, models.py, and each route/service file and explain what each one does and how they connect, then i traced one flow myself (add a song to a playlist, which triggers a notification to the sharer) by having it walk the call chain file by file, in order, rather than jumping straight to the function it suspected. i pushed back once when it wrote the whole map before walking me through the reasoning first, since i wanted to understand the "why" behind each step before it got written down anywhere.
+
+for each bug, i had it read the route first, then follow the exact call chain into the service layer, one file at a time, instead of asking it to just go find the bug. that mattered on issue #4, where reading rate_song next to add_to_playlist side by side, in the same file, is what actually showed the missing notification call. if i'd just asked "what's wrong with rate_song," it might have guessed at something plausible without the direct comparison that made it obvious.
+
+the most useful failure was on issue #2. i asked it to reproduce "friends listening now shows people from yesterday" and its first attempt wrote a script that recalculated the "expected" result using the same 24 hour cutoff the code already used, so naturally it matched and looked like the bug didn't reproduce. that was a real dead end, not a manufactured one, it took going back and rereading a comment in seed_data.py ("recent events within the past 30 minutes") that had already been read earlier in the session but wasn't weighed as the actual spec until this point. i had it lay out that reasoning explicitly, then verify against a friend pairing where the stale event wasn't masked by a fresh one, before i accepted the diagnosis.
+
+for the fixes themselves, i had it verify boundary conditions on both sides for the two threshold-shaped bugs, songs at the edges of the playlist and events just inside/outside the 30 minute window, and grep for every caller of a function before changing it, rather than trusting that a fix in isolation was safe. i read every diff myself before it was applied and asked it to re-run the full test suite after each change to confirm nothing else broke. i wrote the final root cause and reproduction descriptions in my own words rather than accepting its first draft verbatim, since the assignment is explicitly about being able to explain the reasoning myself.
+
 ## Codebase Map
 
 ### Architecture
